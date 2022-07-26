@@ -228,7 +228,12 @@ namespace util {
             bool update_title_bar_theme_color_inner(HWND hwnd, bool enable_dark) {
                 BOOL dark = enable_dark;
                 WINDOWCOMPOSITIONATTRIBDATA data = { WCA_USEDARKMODECOLORS, &dark, sizeof(dark) };
-                return fn_SetWindowCompositionAttribute(hwnd, &data);
+                auto result = fn_SetWindowCompositionAttribute(hwnd, &data);
+                bool is_window_active = GetForegroundWindow() == hwnd;
+                // A simple workaround for forcing redraw of window border
+                SendMessage(hwnd, WM_NCACTIVATE, is_window_active ? 0 : 1, 0);
+                SendMessage(hwnd, WM_NCACTIVATE, is_window_active ? 1 : 0, 0);
+                return result;
             }
             bool update_title_bar_theme_color(HWND hwnd, bool enable_dark) {
                 if (!init_dark_mode_apis()) {
